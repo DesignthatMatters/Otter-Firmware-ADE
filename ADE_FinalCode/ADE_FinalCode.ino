@@ -13,7 +13,7 @@
 // which analog pin to connect
 #define THERMISTOR_PIN A3
 // resistance at 25 degrees C
-#define THERMISTORNOMINAL 10000      
+#define THERMISTORNOMINAL 48000 // measured from bassinet on 10/28/17      
 // temp. for nominal resistance (almost always 25 C)
 #define TEMPERATURENOMINAL 25   
 // how many samples to take and average, more takes longer
@@ -66,7 +66,7 @@ void PID_loop() {
   if (controlSignal > 255) { //When control signal exceeds the maximum value, set it to the maximum value 255.
     controlSignal = 255;
   }
-  controlSignal = 255;
+ // controlSignal = 255;
   analogWrite(bassinetPin, controlSignal); //Produce PWM at specified control signal cycle.
 }
 
