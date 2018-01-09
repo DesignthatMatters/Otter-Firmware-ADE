@@ -1,3 +1,5 @@
+#include <SPI.h>
+
 //#include "pitches.h" // buzzer reference
 
 //7-Seg. Libraries
@@ -72,14 +74,13 @@ void setup() {
   pinMode(buzzPin2, OUTPUT);
   pinMode(THERMISTOR_PIN, INPUT); 
   pinMode(bassinetPin, OUTPUT);
-  
   analogReference(EXTERNAL); 
-  setPwmFrequency(bassinetPin,1); // Bassinet hums out of hearing range @ 61,250 Hz http://playground.arduino.cc/Code/PwmFrequency
+  setPwmFrequency(bassinetPin,1024); // Bassinet hums out of hearing range @ 61,250 Hz http://playground.arduino.cc/Code/PwmFrequency
 
   //7-Seg. Display
-  #ifndef __AVR_ATtiny85_
+  
   Serial.println("7 Segment Backpack Test");
-  #endif
+  
   matrix.begin(0x70); // begins I2C communication with seven segment display
   matrix.setBrightness(3); // sets brightness, on scale of 0 (dim) to 15 (bright)
   turnOffDisp(); 
@@ -107,6 +108,7 @@ void loop() {
       // 7-Seg. Display Code
     upTemp = analogRead(UP_BUTTON_PIN); // get signal fom membrane switch (up arrow)
     downTemp = analogRead(DOWN_BUTTON_PIN); //get signal from membrane switch (down arrow)
+
     if (upTemp >= 1000 && setTemp < maxTemp) {  // condition that membrane switch is high (pressed) and that the desired set temp is less than max
       setTemp = setTemp+1; // increment set temperature by 1
     }
@@ -128,6 +130,10 @@ void loop() {
     Serial.print("  Error: "); Serial.print(current_error);
     Serial.print("  Control Sig:  "); Serial.println(controlSignal);
   }
+  else {
+    analogWrite(bassinetPin, 0); 
+  }
+  
 
 
 // Alarm button code -- WILL ALARM EVEN WHEN DISPLAY IS NOT ON
@@ -169,7 +175,7 @@ void currentTempUpdate() {
 
 float get_temperature() { //Receive temperature measurement
   uint8_t i;
-  float average; 
+  float average = 0; 
   for (i=0; i< NUMSAMPLES; i++) {         // store NUMSAMPLES of thermistor readings
     sample[i]= analogRead(THERMISTOR_PIN);
     delay(50); // 50 millisecond delay between readings
