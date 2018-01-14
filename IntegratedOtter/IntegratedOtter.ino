@@ -47,9 +47,14 @@ uint16_t sample[NUMSAMPLES];
 float currentTemp; //temperature measurement
 boolean showCurrentTemp = true; 
 long prevMs = 0; // set up timer
+long prevMsSet = 0; // set up timer
+long newMs = 0; // set up timer
 
-int dispDelay = 1000; // milliseconds to allow set temp interactions without displaying current temperature (simulated multi-threading)
+int dispDelayDefault = 500;
+int dispDelaySet = 1000; // milliseconds to allow set temp interactions without displaying current temperature (simulated multi-threading)
 int debouncer = 400; // milliseconds to delay code for debouncing
+
+boolean justSet = false;
 
 // Alarm Parameters
 boolean soundAlarm = false;
@@ -103,6 +108,8 @@ void loop() {
   if (sevseg_on) {
     if (showCurrentTemp){
       currentTempUpdate(); // only show current temperature if the display is on and the user is not changing the set temp
+      showCurrentTemp = false;
+      prevMs = millis();
     }
  
       // 7-Seg. Display Code
@@ -118,13 +125,19 @@ void loop() {
     if (upTemp >= 1000 || downTemp >= 1000){
       setTempUpdate(); // show temp even when already at min/ max
       showCurrentTemp = false; //pause currentTemp updates
-      prevMs = millis(); //get time of latest setTemp button press
+      prevMsSet = millis(); //get time of latest setTemp button press
     }
-    unsigned long newMs = millis(); 
-    if(newMs - prevMs > dispDelay){ // check if enough time has passed since latest setTemp button press
+    newMs = millis();
+    if(newMs - prevMsSet > dispDelaySet && justSet){ // check if enough time has passed since latest setTemp button press
       showCurrentTemp = true; // if so, allow current temp display again
+      justSet == false;
     }
-    PID_loop(); // update heating control system
+    if(newMs - prevMs > dispDelayDefault && !justSet) { // this is to manually add delay on default temp display
+     showCurrentTemp = true; 
+    }
+
+//    PID_loop(); // update heating control system
+    bangbang_loop();
     Serial.print("Target: "); Serial.print(setTemp);
     Serial.print("  Current: "); Serial.print(currentTemp);
     Serial.print("  Error: "); Serial.print(current_error);
@@ -249,17 +262,29 @@ void diffDriveTone (int period, int duration) {
     return;
 }
 
+void bangbang_loop() {
+  current_error = setTemp - currentTemp;
+  if (current_error > 0.1) {
+   controlSignal = 255;
+  } else if (current_error > -0.1) {
+   controlSignal = 128;
+  } else {
+    controlSignal = 0;
+  }
+   analogWrite(bassinetPin, controlSignal); 
+}
+
 void PID_loop() {
   current_error = setTemp - currentTemp; //calculate error
-  controlSignal = round(150*current_error+1.5*(currentTemp-old_temp)); // P + D control. But the D control is set to 0, becuase it doesn't really do anything yet. It's based on temperature change. Need to avg set of temp values to see more change for Dterm to actually be effective.
+  controlSignal = round(300*current_error+0*(currentTemp-old_temp)); // P + D control. But the D control is set to 0, becuase it doesn't really do anything yet. It's based on temperature change. Need to avg set of temp values to see more change for Dterm to actually be effective.
   if (controlSignal < 0){ //When control signal becomes negative, set it to zero.
     controlSignal = 0; 
   }
   if (controlSignal > 255) { //When control signal exceeds the maximum value, set it to the maximum value 255.
     controlSignal = 255;
   }
-  Serial.print("Control: ");
-  Serial.println(controlSignal);
+//  Serial.print("Control: ");
+//  Serial.println(controlSignal);
   analogWrite(bassinetPin, controlSignal); //Produce PWM at specified control signal cycle.
 }
 
