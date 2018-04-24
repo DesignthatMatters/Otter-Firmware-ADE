@@ -1,6 +1,4 @@
-# Otter
-
-## By Design That Matters, Affordable Design and Entrepreneurship Course from Babson College and Olin College
+# Otter Firmware code
 
 ### Otter is an affordable conductive warming bassinet. This repository contains firmware code for the hardware.
 
