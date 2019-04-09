@@ -6,6 +6,8 @@
 
 Master branch contains most up-to-date Otter code for full system. Otter should work when `integratedOtter.ino` file is uploaded to the arduino on Otter, given that all hardware systems (UI, heating element) are functional.
 
+You may need to copy the library subfolder to the Arduino libraries folder on your computer to make the dependencies work.
+
 ### Branches
 
 This repository is organized into different branches that have slightly different versions of Otter code for different purposes. Following is the list of important branches to note:
