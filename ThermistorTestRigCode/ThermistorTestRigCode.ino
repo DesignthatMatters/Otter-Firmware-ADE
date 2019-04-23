@@ -5,9 +5,9 @@ const int chipSelect = 4; //chipSelect pin for the SD card Reader
 //File SensorData;
 
 // resistance at 25 degrees C
-const int THERMISTORNOMINAL[] {11596, 11827, 11636, 11601, 11594};      
+const int THERMISTORNOMINAL[] {10100, 10245, 10285, 10250, 9965};      
 // temp. for nominal resistance (almost always 25 C)
-#define TEMPERATURENOMINAL 21.4
+#define TEMPERATURENOMINAL 25
 // how many samples to take and average, more takes longer
 // The beta coefficient of the thermistor (usually 3000-4000)
 #define BCOEFFICIENT 3950
@@ -87,9 +87,6 @@ float get_temperature(int platenum) { //Receive temperature measurement
   average /= NUMSAMPLES;
   average = SERIESRESISTOR / (1023 / average - 1);
 //  return average;
-//  if (platenum == 4) {
-//    Serial.print(average); Serial.println(",");
-//  }
  
   float steinhart;
   steinhart = log(average / THERMISTORNOMINAL[platenum]) / BCOEFFICIENT; // ln(R/Ro) * 1/B
